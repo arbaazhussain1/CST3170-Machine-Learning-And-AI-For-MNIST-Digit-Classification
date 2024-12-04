@@ -33,21 +33,21 @@ public class SupportVectorMachineClassifier {
     /**
      * Trains the SVM using gradient descent with hinge loss.
      * 
-     * @param featureData List of feature vectors for training.
-     * @param labels      Corresponding labels for the training data.
+     * @param datasetFeatures List of feature vectors for training.
+     * @param datasetLabels      Corresponding labels for the training data.
      */
-    public void train(List<int[]> featureData, List<Integer> labels) {
-        int numSamples = featureData.size();
+    public void train(List<int[]> datasetFeatures, List<Integer> datasetLabels) {
+        int trainingDataSize = datasetFeatures.size();
 
-        for (int iterationCount = 0; iterationCount < maxIterations; iterationCount++) {
-            for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
-                int[] featureVector = featureData.get(sampleIndex);
-                int trueLabel = labels.get(sampleIndex);
+        for (int trainingIteration = 0; trainingIteration < maxIterations; trainingIteration++) {
+            for (int dataPointIndex = 0; dataPointIndex < trainingDataSize; dataPointIndex++) {
+                int[] dataPointFeatures = datasetFeatures.get(dataPointIndex);
+                int dataPointLabel = datasetLabels.get(dataPointIndex);
 
                 // Compute the margin (distance from the hyperplane)
-                double margin = trueLabel * (dotProduct(featureWeights, featureVector) + biasTerm);
+                double hyperplaneMargin = dataPointLabel * (dotProduct(featureWeights, dataPointFeatures) + biasTerm);
 
-                if (margin >= 1) {
+                if (hyperplaneMargin >= 1) {
                     // Correctly classified, only regularise weights
                     for (int weightIndex = 0; weightIndex < featureWeights.length; weightIndex++) {
                         featureWeights[weightIndex] -= learningRate * 2 * featureWeights[weightIndex];
@@ -56,9 +56,9 @@ public class SupportVectorMachineClassifier {
                     // Misclassified, update weights and bias
                     for (int weightIndex = 0; weightIndex < featureWeights.length; weightIndex++) {
                         featureWeights[weightIndex] -= learningRate * 
-                                (2 * featureWeights[weightIndex] - regularisationParam * trueLabel * featureVector[weightIndex]);
+                                (2 * featureWeights[weightIndex] - regularisationParam * dataPointLabel * dataPointFeatures[weightIndex]);
                     }
-                    biasTerm += learningRate * regularisationParam * trueLabel;
+                    biasTerm += learningRate * regularisationParam * dataPointLabel;
                 }
             }
         }
@@ -84,9 +84,9 @@ public class SupportVectorMachineClassifier {
      */
     public double evaluate(List<int[]> featureData, List<Integer> labels) {
         int correctPredictions = 0;
-        for (int sampleIndex = 0; sampleIndex < featureData.size(); sampleIndex++) {
-            int prediction = predict(featureData.get(sampleIndex));
-            if (prediction == labels.get(sampleIndex)) {
+        for (int dataPointIndex = 0; dataPointIndex < featureData.size(); dataPointIndex++) {
+            int prediction = predict(featureData.get(dataPointIndex));
+            if (prediction == labels.get(dataPointIndex)) {
                 correctPredictions++;
             }
         }
@@ -103,12 +103,12 @@ public class SupportVectorMachineClassifier {
      */
     public void gridSearch(List<int[]> trainingFeatures, List<Integer> trainingLabels, List<int[]> validationFeatures,
             List<Integer> validationLabels) {
-        double bestRegularizationParam = 1.0, bestRbfGamma = 0.1, bestAccuracy = 0.0;
+        double bestRegularisationParam = 1.0, bestRbfGamma = 0.1, bestAccuracy = 0.0;
 
-        double[] regularizationValues = { 0.1, 1, 10 }; // Values to test for regularisation parameter
+        double[] regularisationValues = { 0.1, 1, 10 }; // Values to test for regularisation parameter
         double[] gammaValues = { 0.01, 0.1, 1 }; // Values to test for gamma
 
-        for (double regParam : regularizationValues) {
+        for (double regParam : regularisationValues) {
             for (double gammaValue : gammaValues) {
                 this.regularisationParam = regParam;
                 this.rbfGamma = gammaValue;
@@ -120,7 +120,7 @@ public class SupportVectorMachineClassifier {
                 // Update best parameters if accuracy improves
                 if (validationAccuracy > bestAccuracy) {
                     bestAccuracy = validationAccuracy;
-                    bestRegularizationParam = regParam;
+                    bestRegularisationParam = regParam;
                     bestRbfGamma = gammaValue;
                 }
             }
@@ -128,10 +128,10 @@ public class SupportVectorMachineClassifier {
 
         // Output the best parameters and accuracy
         System.out.printf("Best Regularisation Param: %.2f, Best RBF Gamma: %.2f, Best Accuracy: %.2f%%\n",
-                bestRegularizationParam, bestRbfGamma, bestAccuracy);
+                bestRegularisationParam, bestRbfGamma, bestAccuracy);
 
         // Update classifier with the best parameters
-        this.regularisationParam = bestRegularizationParam;
+        this.regularisationParam = bestRegularisationParam;
         this.rbfGamma = bestRbfGamma;
     }
 

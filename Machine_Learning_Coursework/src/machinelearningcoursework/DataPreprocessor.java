@@ -13,21 +13,21 @@ public class DataPreprocessor {
      * 
      * @param filePath     Path to the CSV file.
      * @param featureMatrix List to store feature rows.
-     * @param labelList     List to store labels.
+     * @param labelsList     List to store labels.
      */
-    public void loadFileData(String filePath, List<int[]> featureMatrix, List<Integer> labelList) {
+    public void loadFileData(String filePath, List<int[]> featureMatrix, List<Integer> labelsList) {
         try (Scanner fileScanner = new Scanner(new File(filePath))) {
             while (fileScanner.hasNextLine()) {
                 String line = fileScanner.nextLine();
                 String[] elements = line.split(",");
 
                 if (elements.length == 65) { // 64 features + 1 label
-                    int[] featureRow = new int[64];
+                    int[] featureVector = new int[64];
                     for (int featureIndex = 0; featureIndex < 64; featureIndex++) {
-                        featureRow[featureIndex] = Integer.parseInt(elements[featureIndex]);
+                        featureVector[featureIndex] = Integer.parseInt(elements[featureIndex]);
                     }
-                    featureMatrix.add(featureRow); // Add the features to the feature matrix
-                    labelList.add(Integer.parseInt(elements[64])); // Add the label to the label list
+                    featureMatrix.add(featureVector); // Add the features to the feature matrix
+                    labelsList.add(Integer.parseInt(elements[64])); // Add the label to the label list
                 } else {
                     System.out.println("Line skipped due to unexpected format.");
                 }
@@ -43,12 +43,12 @@ public class DataPreprocessor {
      * @param featureMatrix List of feature vectors to normalise.
      */
     public void normaliseFeatures(List<int[]> featureMatrix) {
-        for (int[] features : featureMatrix) {
+        for (int[] featureVector : featureMatrix) {
             // Calculate the L2 norm of the feature vector
-            double vectorNorm = Math.sqrt(Arrays.stream(features).mapToDouble(value -> value * value).sum());
-            if (vectorNorm > 0) { // Avoid division by zero
-                for (int featureIndex = 0; featureIndex < features.length; featureIndex++) {
-                    features[featureIndex] = (int) Math.round((features[featureIndex] / vectorNorm) * 1000);
+            double l2Norm = Math.sqrt(Arrays.stream(featureVector).mapToDouble(value -> value * value).sum());
+            if (l2Norm > 0) { // Avoid division by zero
+                for (int featureIndex = 0; featureIndex < featureVector.length; featureIndex++) {
+                    featureVector[featureIndex] = (int) Math.round((featureVector[featureIndex] / l2Norm) * 1000);
                 }
             }
         }
@@ -59,23 +59,23 @@ public class DataPreprocessor {
      * 
      * @param features        Original feature dataset.
      * @param labels          Original label dataset.
-     * @param fold1Features   List to store features for the first fold.
-     * @param fold1Labels     List to store labels for the first fold.
-     * @param fold2Features   List to store features for the second fold.
-     * @param fold2Labels     List to store labels for the second fold.
+     * @param firstFoldFeatures   List to store features for the first fold.
+     * @param firstFoldLabels     List to store labels for the first fold.
+     * @param secondFoldFeatures   List to store features for the second fold.
+     * @param secondFoldLabels     List to store labels for the second fold.
      */
     public void splitDataset(List<int[]> features, List<Integer> labels,
-                             List<int[]> fold1Features, List<Integer> fold1Labels,
-                             List<int[]> fold2Features, List<Integer> fold2Labels) {
+                             List<int[]> firstFoldFeatures, List<Integer> firstFoldLabels,
+                             List<int[]> secondFoldFeatures, List<Integer> secondFoldLabels) {
         int midpoint = features.size() / 2; // Split the dataset in half
 
-        for (int dataIndex = 0; dataIndex < features.size(); dataIndex++) {
-            if (dataIndex < midpoint) {
-                fold1Features.add(features.get(dataIndex));
-                fold1Labels.add(labels.get(dataIndex));
+        for (int dataPointIndex = 0; dataPointIndex < features.size(); dataPointIndex++) {
+            if (dataPointIndex < midpoint) {
+                firstFoldFeatures.add(features.get(dataPointIndex));
+                firstFoldLabels.add(labels.get(dataPointIndex));
             } else {
-                fold2Features.add(features.get(dataIndex));
-                fold2Labels.add(labels.get(dataIndex));
+                secondFoldFeatures.add(features.get(dataPointIndex));
+                secondFoldLabels.add(labels.get(dataPointIndex));
             }
         }
     }
@@ -88,8 +88,8 @@ public class DataPreprocessor {
      * @param targetClass The class to set as positive (1).
      */
     public void convertLabelsForSVM(List<Integer> labels, int targetClass) {
-        for (int labelIndex = 0; labelIndex < labels.size(); labelIndex++) {
-            labels.set(labelIndex, labels.get(labelIndex) == targetClass ? 1 : -1);
+        for (int labelPosition = 0; labelPosition < labels.size(); labelPosition++) {
+            labels.set(labelPosition, labels.get(labelPosition) == targetClass ? 1 : -1);
         }
     }
 }

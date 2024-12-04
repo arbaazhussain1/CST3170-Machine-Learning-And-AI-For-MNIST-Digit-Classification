@@ -20,19 +20,19 @@ public class KNearestNeighbors {
      */
     public List<Integer> predict(List<int[]> trainingFeatures, List<Integer> trainingLabels, List<int[]> testingFeatures) {
         List<Integer> predictedLabels = new ArrayList<>();
-        for (int[] testingSample : testingFeatures) {
-            double smallestDistance = Double.MAX_VALUE; // Initialise with a large value
-            int nearestLabel = -1; // Initialise with a default value
+        for (int[] testPoint : testingFeatures) {
+            double nearestDistance = Double.MAX_VALUE; // Initialise with a large value
+            int labelOfNearestNeighbor = -1; // Initialise with a default value
 
             // Find the nearest neighbor in the training set
-            for (int trainingIndex = 0; trainingIndex < trainingFeatures.size(); trainingIndex++) {
-                double distance = calculateEuclideanDistance(testingSample, trainingFeatures.get(trainingIndex));
-                if (distance < smallestDistance) {
-                    smallestDistance = distance; // Update smallest distance
-                    nearestLabel = trainingLabels.get(trainingIndex); // Update nearest label
+            for (int trainingPointIndex = 0; trainingPointIndex < trainingFeatures.size(); trainingPointIndex++) {
+                double distance = calculateEuclideanDistance(testPoint, trainingFeatures.get(trainingPointIndex));
+                if (distance < nearestDistance) {
+                    nearestDistance = distance; // Update smallest distance
+                    labelOfNearestNeighbor = trainingLabels.get(trainingPointIndex); // Update nearest label
                 }
             }
-            predictedLabels.add(nearestLabel); // Add the predicted label
+            predictedLabels.add(labelOfNearestNeighbor); // Add the predicted label
         }
         return predictedLabels;
     }
@@ -40,14 +40,14 @@ public class KNearestNeighbors {
     /**
      * Calculates the Euclidean distance between two feature vectors.
      * 
-     * @param point1 First feature vector.
-     * @param point2 Second feature vector.
+     * @param vector1 First feature vector.
+     * @param vector2 Second feature vector.
      * @return Euclidean distance between the two vectors.
      */
-    private double calculateEuclideanDistance(int[] point1, int[] point2) {
+    private double calculateEuclideanDistance(int[] vector1, int[] vector2) {
         double squaredDifferenceSum = 0.0;
-        for (int featureIndex = 0; featureIndex < point1.length; featureIndex++) {
-            squaredDifferenceSum += Math.pow(point1[featureIndex] - point2[featureIndex], 2);
+        for (int featureIndex = 0; featureIndex < vector1.length; featureIndex++) {
+            squaredDifferenceSum += Math.pow(vector1[featureIndex] - vector2[featureIndex], 2);
         }
         return Math.sqrt(squaredDifferenceSum); // Return the square root of the sum
     }

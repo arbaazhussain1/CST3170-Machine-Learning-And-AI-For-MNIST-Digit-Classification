@@ -59,54 +59,54 @@ public class MultiLayerPerceptronClassifier {
     /**
      * Trains the MLP using backpropagation on the given feature data and labels.
      * 
-     * @param featureData Feature matrix (list of feature vectors).
-     * @param labels      List of corresponding labels for training.
+     * @param datasetFeatures Feature matrix (list of feature vectors).
+     * @param datasetLabels      List of corresponding labels for training.
      */
-    public void train(List<int[]> featureData, List<Integer> labels) {
+    public void train(List<int[]> datasetFeatures, List<Integer> datasetLabels) {
         // Normalise labels to 0 (negative) and 1 (positive)
-        List<Double> normalizedLabels = labels.stream().map(label -> label > 0 ? 1.0 : 0.0).toList();
+        List<Double> normalisedLabels = datasetLabels.stream().map(label -> label > 0 ? 1.0 : 0.0).toList();
 
-        for (int iterationCount = 0; iterationCount < maxTrainingIterations; iterationCount++) {
-            for (int sampleIndex = 0; sampleIndex < featureData.size(); sampleIndex++) {
-                int[] inputFeatures = featureData.get(sampleIndex);
-                double targetOutput = normalizedLabels.get(sampleIndex);
+        for (int trainingIteration = 0; trainingIteration < maxTrainingIterations; trainingIteration++) {
+            for (int dataPointIndex = 0; dataPointIndex < datasetFeatures.size(); dataPointIndex++) {
+                int[] inputFeatures = datasetFeatures.get(dataPointIndex);
+                double targetOutput = normalisedLabels.get(dataPointIndex);
 
                 // Forward pass: Compute hidden layer outputs
-                double[] hiddenLayerOutputs = new double[hiddenLayerSize];
-                for (int hiddenNeuronIndex = 0; hiddenNeuronIndex < hiddenLayerSize; hiddenNeuronIndex++) {
-                    hiddenLayerOutputs[hiddenNeuronIndex] = sigmoid(
-                            dotProduct(inputFeatures, weightsInputToHidden, hiddenNeuronIndex)
-                                    + hiddenLayerBiases[hiddenNeuronIndex]);
+                double[] hiddenLayerActivations = new double[hiddenLayerSize];
+                for (int hiddenLayerNeuronIndex = 0; hiddenLayerNeuronIndex < hiddenLayerSize; hiddenLayerNeuronIndex++) {
+                    hiddenLayerActivations[hiddenLayerNeuronIndex] = sigmoid(
+                            dotProduct(inputFeatures, weightsInputToHidden, hiddenLayerNeuronIndex)
+                                    + hiddenLayerBiases[hiddenLayerNeuronIndex]);
                 }
 
                 // Compute output layer activation
-                double output = sigmoid(dotProduct(hiddenLayerOutputs, weightsHiddenToOutput) + outputBias);
+                double outputActivation = sigmoid(dotProduct(hiddenLayerActivations, weightsHiddenToOutput) + outputBias);
 
                 // Backpropagation: Compute errors
-                double outputError = (targetOutput - output) * sigmoidDerivative(output);
-                double[] hiddenErrors = new double[hiddenLayerSize];
+                double outputLayerError = (targetOutput - outputActivation) * sigmoidDerivative(outputActivation);
+                double[] hiddenLayerErrors = new double[hiddenLayerSize];
                 for (int hiddenNeuronIndex = 0; hiddenNeuronIndex < hiddenLayerSize; hiddenNeuronIndex++) {
-                    hiddenErrors[hiddenNeuronIndex] = outputError * weightsHiddenToOutput[hiddenNeuronIndex]
-                            * sigmoidDerivative(hiddenLayerOutputs[hiddenNeuronIndex]);
+                    hiddenLayerErrors[hiddenNeuronIndex] = outputLayerError * weightsHiddenToOutput[hiddenNeuronIndex]
+                            * sigmoidDerivative(hiddenLayerActivations[hiddenNeuronIndex]);
                 }
 
                 // Update weights and biases
                 // Update weightsHiddenToOutput and outputBias
                 for (int hiddenNeuronIndex = 0; hiddenNeuronIndex < hiddenLayerSize; hiddenNeuronIndex++) {
-                    weightsHiddenToOutput[hiddenNeuronIndex] += learningRate * outputError
-                            * hiddenLayerOutputs[hiddenNeuronIndex];
+                    weightsHiddenToOutput[hiddenNeuronIndex] += learningRate * outputLayerError
+                            * hiddenLayerActivations[hiddenNeuronIndex];
                 }
-                outputBias += learningRate * outputError;
+                outputBias += learningRate * outputLayerError;
 
                 // Update weightsInputToHidden and hiddenLayerBiases
-                for (int inputIndex = 0; inputIndex < inputFeatureSize; inputIndex++) {
+                for (int inputFeatureIndex = 0; inputFeatureIndex < inputFeatureSize; inputFeatureIndex++) {
                     for (int hiddenNeuronIndex = 0; hiddenNeuronIndex < hiddenLayerSize; hiddenNeuronIndex++) {
-                        weightsInputToHidden[inputIndex][hiddenNeuronIndex] += learningRate
-                                * hiddenErrors[hiddenNeuronIndex] * inputFeatures[inputIndex];
+                        weightsInputToHidden[inputFeatureIndex][hiddenNeuronIndex] += learningRate
+                                * hiddenLayerErrors[hiddenNeuronIndex] * inputFeatures[inputFeatureIndex];
                     }
                 }
                 for (int hiddenNeuronIndex = 0; hiddenNeuronIndex < hiddenLayerSize; hiddenNeuronIndex++) {
-                    hiddenLayerBiases[hiddenNeuronIndex] += learningRate * hiddenErrors[hiddenNeuronIndex];
+                    hiddenLayerBiases[hiddenNeuronIndex] += learningRate * hiddenLayerErrors[hiddenNeuronIndex];
                 }
             }
         }
@@ -143,9 +143,9 @@ public class MultiLayerPerceptronClassifier {
      */
     public double evaluate(List<int[]> featureData, List<Integer> labels) {
         int correctPredictions = 0;
-        for (int sampleIndex = 0; sampleIndex < featureData.size(); sampleIndex++) {
-            int prediction = predict(featureData.get(sampleIndex));
-            int trueLabel = labels.get(sampleIndex) > 0 ? 1 : 0;
+        for (int dataPointIndex = 0; dataPointIndex < featureData.size(); dataPointIndex++) {
+            int prediction = predict(featureData.get(dataPointIndex));
+            int trueLabel = labels.get(dataPointIndex) > 0 ? 1 : 0;
             if (prediction == trueLabel) {
                 correctPredictions++;
             }
