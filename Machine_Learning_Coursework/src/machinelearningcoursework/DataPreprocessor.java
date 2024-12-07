@@ -22,18 +22,22 @@ public class DataPreprocessor {
 				String[] elements = line.split(",");
 
 				if (elements.length == 65) { // 64 features + 1 label
-					int[] featureVector = new int[64];
-					for (int featureIndex = 0; featureIndex < 64; featureIndex++) {
-						featureVector[featureIndex] = Integer.parseInt(elements[featureIndex]);
+					try {
+						int[] featureVector = new int[64];
+						for (int featureIndex = 0; featureIndex < 64; featureIndex++) {
+							featureVector[featureIndex] = Integer.parseInt(elements[featureIndex]);
+						}
+						featureMatrix.add(featureVector); // Add the features to the feature matrix
+						labelsList.add(Integer.parseInt(elements[64])); // Add the label to the label list
+					} catch (NumberFormatException e) {
+						System.err.println("Invalid number format in line: " + line);
 					}
-					featureMatrix.add(featureVector); // Add the features to the feature matrix
-					labelsList.add(Integer.parseInt(elements[64])); // Add the label to the label list
 				} else {
-					System.out.println("Line skipped due to unexpected format.");
+					System.err.println("Line skipped due to unexpected format: " + line);
 				}
 			}
 		} catch (FileNotFoundException e) {
-			System.err.println("File not found: " + e.getMessage());
+			System.err.println("Error: File not found at " + filePath);
 		}
 	}
 
