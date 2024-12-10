@@ -1,26 +1,31 @@
 package machinelearningcoursework;
 
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Random;
 
+/**
+ * Implements a Multi-Layer Perceptron (MLP) Classifier for binary
+ * classification. Supports a single hidden layer with configurable size,
+ * learning rate, and training iterations.
+ */
 public class MultiLayerPerceptronClassifier {
 
-	// Weights and biases for the network
-	private double[][] weightsInputToHidden; // Weights between input and hidden layer
-	private double[] weightsHiddenToOutput; // Weights between hidden and output layer
+	// Neural network parameters
+	private double[][] weightsInputToHidden; // Weights between the input layer and hidden layer
+	private double[] weightsHiddenToOutput; // Weights between the hidden layer and output layer
 	private double[] hiddenLayerBiases; // Biases for hidden layer neurons
 	private double outputBias; // Bias for the output neuron
 
-	// Hyper parameters
-	private double learningRate; // Learning rate for training
+	// Hyperparameters for training
+	private double learningRate; // Learning rate for gradient updates
 	private int inputFeatureSize; // Number of input features
 	private int hiddenLayerSize; // Number of neurons in the hidden layer
-	private int maxTrainingIterations; // Maximum number of training iterations
+	private int maxTrainingIterations; // Maximum number of iterations for training
 
 	/**
 	 * Constructor for the Multi-Layer Perceptron Classifier. Initialises weights
-	 * and biases randomly with small values.
-	 * 
+	 * and biases with small random values.
+	 *
 	 * @param inputFeatureSize      Number of input features.
 	 * @param hiddenLayerSize       Number of neurons in the hidden layer.
 	 * @param outputSize            Number of output neurons (unused but required
@@ -37,16 +42,16 @@ public class MultiLayerPerceptronClassifier {
 
 		Random randomGenerator = new Random();
 
-		// Initialise weights and biases with small random values
-		this.weightsInputToHidden = new double[inputFeatureSize][hiddenLayerSize];
-		this.weightsHiddenToOutput = new double[hiddenLayerSize];
-		this.hiddenLayerBiases = new double[hiddenLayerSize];
-		this.outputBias = randomGenerator.nextDouble() - 0.5;
+		// Initialise weights and biases
+		weightsInputToHidden = new double[inputFeatureSize][hiddenLayerSize];
+		weightsHiddenToOutput = new double[hiddenLayerSize];
+		hiddenLayerBiases = new double[hiddenLayerSize];
+		outputBias = randomGenerator.nextDouble() - 0.5;
 
 		// Populate weightsInputToHidden with small random values
 		for (int inputIndex = 0; inputIndex < inputFeatureSize; inputIndex++) {
-			for (int hiddenNeuronIndex = 0; hiddenNeuronIndex < hiddenLayerSize; hiddenNeuronIndex++) {
-				weightsInputToHidden[inputIndex][hiddenNeuronIndex] = (randomGenerator.nextDouble() - 0.5) / 10;
+			for (int j = 0; j < hiddenLayerSize; j++) {
+				weightsInputToHidden[inputIndex][j] = (randomGenerator.nextDouble() - 0.5) / 10;
 			}
 		}
 
@@ -59,18 +64,23 @@ public class MultiLayerPerceptronClassifier {
 
 	/**
 	 * Trains the MLP using backpropagation on the given feature data and labels.
-	 * 
+	 *
 	 * @param datasetFeatures Feature matrix (list of feature vectors).
 	 * @param datasetLabels   List of corresponding labels for training.
 	 */
-	public void train(List<int[]> datasetFeatures, List<Integer> datasetLabels) {
-		// Normalise labels to 0 (negative) and 1 (positive)
-		List<Double> normalisedLabels = datasetLabels.stream().map(label -> label > 0 ? 1.0 : 0.0).toList();
+	public void train(ArrayList<int[]> datasetFeatures, ArrayList<Integer> datasetLabels) {
+		// Normalise labels to binary format: 0 (negative) and 1 (positive)
+		ArrayList<Double> normalisedLabels = new ArrayList<>();
+		for (Integer label : datasetLabels) {
+			normalisedLabels.add(label > 0 ? 1.0 : 0.0);
+		}
 
+		// Perform training for the specified number of iterations
 		for (int trainingIteration = 0; trainingIteration < maxTrainingIterations; trainingIteration++) {
-			for (int dataPointIndex = 0; dataPointIndex < datasetFeatures.size(); dataPointIndex++) {
-				int[] inputFeatures = datasetFeatures.get(dataPointIndex);
-				double targetOutput = normalisedLabels.get(dataPointIndex);
+			for (int trainingDataPointIndex = 0; trainingDataPointIndex < datasetFeatures
+					.size(); trainingDataPointIndex++) {
+				int[] inputFeatures = datasetFeatures.get(trainingDataPointIndex); // Input feature vector
+				double targetOutput = normalisedLabels.get(trainingDataPointIndex); // Target label
 
 				// Forward pass: Compute hidden layer outputs
 				double[] hiddenLayerActivations = new double[hiddenLayerSize];
@@ -85,10 +95,12 @@ public class MultiLayerPerceptronClassifier {
 						dotProduct(hiddenLayerActivations, weightsHiddenToOutput) + outputBias);
 
 				// Backpropagation: Compute errors
-				double outputLayerError = (targetOutput - outputActivation) * sigmoidDerivative(outputActivation);
-				double[] hiddenLayerErrors = new double[hiddenLayerSize];
+				double outputLayerError = (targetOutput - outputActivation) * sigmoidDerivative(outputActivation); // Output
+																													// layer
+																													// error
+				double[] hiddenErrors = new double[hiddenLayerSize]; // Hidden layer errors
 				for (int hiddenNeuronIndex = 0; hiddenNeuronIndex < hiddenLayerSize; hiddenNeuronIndex++) {
-					hiddenLayerErrors[hiddenNeuronIndex] = outputLayerError * weightsHiddenToOutput[hiddenNeuronIndex]
+					hiddenErrors[hiddenNeuronIndex] = outputLayerError * weightsHiddenToOutput[hiddenNeuronIndex]
 							* sigmoidDerivative(hiddenLayerActivations[hiddenNeuronIndex]);
 				}
 
@@ -104,11 +116,11 @@ public class MultiLayerPerceptronClassifier {
 				for (int inputFeatureIndex = 0; inputFeatureIndex < inputFeatureSize; inputFeatureIndex++) {
 					for (int hiddenNeuronIndex = 0; hiddenNeuronIndex < hiddenLayerSize; hiddenNeuronIndex++) {
 						weightsInputToHidden[inputFeatureIndex][hiddenNeuronIndex] += learningRate
-								* hiddenLayerErrors[hiddenNeuronIndex] * inputFeatures[inputFeatureIndex];
+								* hiddenErrors[hiddenNeuronIndex] * inputFeatures[inputFeatureIndex];
 					}
 				}
 				for (int hiddenNeuronIndex = 0; hiddenNeuronIndex < hiddenLayerSize; hiddenNeuronIndex++) {
-					hiddenLayerBiases[hiddenNeuronIndex] += learningRate * hiddenLayerErrors[hiddenNeuronIndex];
+					hiddenLayerBiases[hiddenNeuronIndex] += learningRate * hiddenErrors[hiddenNeuronIndex];
 				}
 			}
 		}
@@ -116,7 +128,7 @@ public class MultiLayerPerceptronClassifier {
 
 	/**
 	 * Predicts the label for a given input feature vector.
-	 * 
+	 *
 	 * @param inputFeatures Feature vector for prediction.
 	 * @return Predicted label (1 for positive, 0 for negative).
 	 */
@@ -138,12 +150,12 @@ public class MultiLayerPerceptronClassifier {
 
 	/**
 	 * Evaluates the model on a given dataset and computes accuracy.
-	 * 
+	 *
 	 * @param featureData Feature matrix (list of feature vectors).
 	 * @param labels      List of true labels.
 	 * @return Accuracy as a percentage.
 	 */
-	public double evaluate(List<int[]> featureData, List<Integer> labels) {
+	public double evaluate(ArrayList<int[]> featureData, ArrayList<Integer> labels) {
 		int correctPredictions = 0;
 		for (int dataPointIndex = 0; dataPointIndex < featureData.size(); dataPointIndex++) {
 			int prediction = predict(featureData.get(dataPointIndex));
@@ -157,8 +169,14 @@ public class MultiLayerPerceptronClassifier {
 
 	// Helper methods
 
-	// Computes the dot product between an input vector and weights for a specific
-	// column
+	/**
+	 * Computes the dot product between an input vector and a column of weights.
+	 *
+	 * @param inputFeatures The input feature vector.
+	 * @param weights       The weight matrix.
+	 * @param columnIndex   The index of the column to compute the dot product with.
+	 * @return The computed dot product.
+	 */
 	private double dotProduct(int[] inputFeatures, double[][] weights, int columnIndex) {
 		double sum = 0.0;
 		for (int inputIndex = 0; inputIndex < inputFeatures.length; inputIndex++) {
@@ -167,7 +185,13 @@ public class MultiLayerPerceptronClassifier {
 		return sum;
 	}
 
-	// Computes the dot product between two vectors
+	/**
+	 * Computes the dot product between two vectors.
+	 *
+	 * @param inputVector The input vector.
+	 * @param weights     The weight vector.
+	 * @return The computed dot product.
+	 */
 	private double dotProduct(double[] inputVector, double[] weights) {
 		double sum = 0.0;
 		for (int featureIndex = 0; featureIndex < inputVector.length; featureIndex++) {
@@ -176,12 +200,22 @@ public class MultiLayerPerceptronClassifier {
 		return sum;
 	}
 
-	// Sigmoid activation function
+	/**
+	 * Computes the sigmoid activation function.
+	 *
+	 * @param value The input value.
+	 * @return The sigmoid activation.
+	 */
 	private double sigmoid(double value) {
 		return 1 / (1 + Math.exp(-value));
 	}
 
-	// Derivative of the sigmoid function
+	/**
+	 * Computes the derivative of the sigmoid function.
+	 *
+	 * @param value The input value.
+	 * @return The sigmoid derivative.
+	 */
 	private double sigmoidDerivative(double value) {
 		return value * (1 - value);
 	}

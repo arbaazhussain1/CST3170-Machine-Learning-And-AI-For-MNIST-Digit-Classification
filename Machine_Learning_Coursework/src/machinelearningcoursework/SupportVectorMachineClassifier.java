@@ -1,6 +1,7 @@
 package machinelearningcoursework;
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class SupportVectorMachineClassifier {
 
@@ -34,35 +35,54 @@ public class SupportVectorMachineClassifier {
 	/**
 	 * Trains the SVM using gradient descent with hinge loss.
 	 * 
-	 * @param datasetFeatures List of feature vectors for training.
-	 * @param datasetLabels   Corresponding labels for the training data.
+	 * @param datasetFeatures Feature vectors for training as an ArrayList.
+	 * @param datasetLabels   Corresponding labels for the training data as an
+	 *                        ArrayList.
 	 */
-	public void train(List<int[]> datasetFeatures, List<Integer> datasetLabels) {
+	public void train(ArrayList<int[]> datasetFeatures, ArrayList<Integer> datasetLabels) {
 		int trainingDataSize = datasetFeatures.size();
+		int featureCount = featureWeights.length;
+		double[] gradients = new double[featureCount];
+
+		System.out.println("Starting training...");
 
 		for (int trainingIteration = 0; trainingIteration < maxIterations; trainingIteration++) {
-			for (int dataPointIndex = 0; dataPointIndex < trainingDataSize; dataPointIndex++) {
-				int[] dataPointFeatures = datasetFeatures.get(dataPointIndex);
-				int dataPointLabel = datasetLabels.get(dataPointIndex);
+			// Initialise gradients for this iteration
+			Arrays.fill(gradients, 0);
+			double biasGradient = 0;
 
-				// Compute the margin (distance from the hyperplane)
-				double hyperplaneMargin = dataPointLabel * (dotProduct(featureWeights, dataPointFeatures) + biasTerm);
+			for (int trainingDataPointIndex = 0; trainingDataPointIndex < trainingDataSize; trainingDataPointIndex++) {
+				int[] dataPointFeatures = datasetFeatures.get(trainingDataPointIndex);
+				int dataPointLabel = datasetLabels.get(trainingDataPointIndex);
 
-				if (hyperplaneMargin >= 1) {
-					// Correctly classified, only regularise weights
-					for (int weightIndex = 0; weightIndex < featureWeights.length; weightIndex++) {
-						featureWeights[weightIndex] -= learningRate * 2 * featureWeights[weightIndex];
+				// Compute prediction and margin
+				double dotProduct = dotProduct(featureWeights, dataPointFeatures);
+				double margin = dataPointLabel * (dotProduct + biasTerm);
+
+				if (margin < 1) {
+					// Misclassified or within margin, update weights and bias
+					for (int weightIndex = 0; weightIndex < featureCount; weightIndex++) {
+						gradients[weightIndex] += -dataPointLabel * dataPointFeatures[weightIndex];
 					}
-				} else {
-					// Misclassified, update weights and bias
-					for (int weightIndex = 0; weightIndex < featureWeights.length; weightIndex++) {
-						featureWeights[weightIndex] -= learningRate * (2 * featureWeights[weightIndex]
-								- regularisationParam * dataPointLabel * dataPointFeatures[weightIndex]);
-					}
-					biasTerm += learningRate * regularisationParam * dataPointLabel;
+					biasGradient += -dataPointLabel;
 				}
 			}
+
+			// Apply regularisation and gradient updates
+			for (int weightIndex = 0; weightIndex < featureCount; weightIndex++) {
+				gradients[weightIndex] = (gradients[weightIndex] / trainingDataSize) + 2 * featureWeights[weightIndex];
+				featureWeights[weightIndex] -= learningRate * gradients[weightIndex];
+			}
+
+			biasTerm -= learningRate * (biasGradient / trainingDataSize);
+
+			// Log progress every 100 iterations
+			if (trainingIteration % 100 == 0) {
+				System.out.printf("Iteration %d completed...\n", trainingIteration);
+			}
 		}
+
+		System.out.println("Training complete! \n");
 	}
 
 	/**
@@ -79,11 +99,11 @@ public class SupportVectorMachineClassifier {
 	/**
 	 * Evaluates the SVM on a given dataset and computes accuracy.
 	 * 
-	 * @param featureData List of feature vectors for evaluation.
-	 * @param labels      Corresponding true labels for the dataset.
+	 * @param featureData Feature vectors for evaluation as an ArrayList.
+	 * @param labels      Corresponding true labels for the dataset as an ArrayList.
 	 * @return Accuracy as a percentage.
 	 */
-	public double evaluate(List<int[]> featureData, List<Integer> labels) {
+	public double evaluate(ArrayList<int[]> featureData, ArrayList<Integer> labels) {
 		int correctPredictions = 0;
 		for (int dataPointIndex = 0; dataPointIndex < featureData.size(); dataPointIndex++) {
 			int prediction = predict(featureData.get(dataPointIndex));
@@ -98,13 +118,13 @@ public class SupportVectorMachineClassifier {
 	 * Performs a grid search to find the best hyper-parameters (regularisation and
 	 * gamma).
 	 * 
-	 * @param trainingFeatures   Training feature set.
-	 * @param trainingLabels     Training labels.
-	 * @param validationFeatures Validation feature set.
-	 * @param validationLabels   Validation labels.
+	 * @param trainingFeatures   Training feature set as an ArrayList.
+	 * @param trainingLabels     Training labels as an ArrayList.
+	 * @param validationFeatures Validation feature set as an ArrayList.
+	 * @param validationLabels   Validation labels as an ArrayList.
 	 */
-	public void gridSearchWithSigmoidKernel(List<int[]> trainingFeatures, List<Integer> trainingLabels,
-			List<int[]> validationFeatures, List<Integer> validationLabels) {
+	public void gridSearchWithSigmoidKernel(ArrayList<int[]> trainingFeatures, ArrayList<Integer> trainingLabels,
+			ArrayList<int[]> validationFeatures, ArrayList<Integer> validationLabels) {
 		double bestC = 1.0, bestGamma = 0.01, bestAccuracy = 0.0;
 		double alpha = 0.1; // Sigmoid kernel scale parameter
 		double beta = 0.0; // Sigmoid kernel offset parameter
