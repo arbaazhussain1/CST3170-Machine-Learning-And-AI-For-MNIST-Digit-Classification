@@ -13,6 +13,10 @@ import java.util.Scanner;
  */
 public class DataPreprocessor {
 
+	// Constants for dataset dimensions
+	private static final int TOTAL_DIMENSIONS = 65; // Total dimensions including features and label
+	private static final int FEATURE_DIMENSIONS = 64; // Number of feature dimensions
+
 	/**
 	 * Loads feature and label data from a CSV file.
 	 *
@@ -35,16 +39,16 @@ public class DataPreprocessor {
 				String line = fileScanner.nextLine(); // Read the next line
 				String[] elements = line.split(","); // Split the line by commas into an array of strings
 
-				if (elements.length == 65) { // Expecting 64 features + 1 label
+				if (elements.length == TOTAL_DIMENSIONS) { // Expecting 64 features + 1 label
 					try {
-						int[] featureVector = new int[64]; // Array to hold the 64 features
-						for (int featureIndex = 0; featureIndex < 64; featureIndex++) {
+						int[] featureVector = new int[FEATURE_DIMENSIONS]; // Array to hold the 64 features
+						for (int featureIndex = 0; featureIndex < FEATURE_DIMENSIONS; featureIndex++) {
 							featureVector[featureIndex] = Integer.parseInt(elements[featureIndex]); // Parse each
 																									// feature as an
 																									// integer
 						}
 						featureMatrix.add(featureVector); // Add the feature vector to the feature matrix
-						labelsList.add(Integer.parseInt(elements[64])); // Parse and add the label
+						labelsList.add(Integer.parseInt(elements[FEATURE_DIMENSIONS])); // Parse and add the label
 					} catch (NumberFormatException error) {
 						if (debug) {
 							// Log an error if number parsing fails
@@ -120,10 +124,10 @@ public class DataPreprocessor {
 	 * @param labels      ArrayList of labels to convert.
 	 * @param targetClass The class to be marked as positive (1).
 	 */
-	public void convertLabelsForSVM(ArrayList<Integer> labels, int targetClass) {
-		for (int labelPosition = 0; labelPosition < labels.size(); labelPosition++) {
-			// Update the label: 1 if it matches the target class, -1 otherwise
-			labels.set(labelPosition, labels.get(labelPosition) == targetClass ? 1 : -1);
-		}
-	}
+//	public void convertLabelsForSVM(ArrayList<Integer> labels, int targetClass) {
+//		for (int labelPosition = 0; labelPosition < labels.size(); labelPosition++) {
+//			// Update the label: 1 if it matches the target class, -1 otherwise
+//			labels.set(labelPosition, labels.get(labelPosition) == targetClass ? 1 : -1);
+//		}
+//	}
 }

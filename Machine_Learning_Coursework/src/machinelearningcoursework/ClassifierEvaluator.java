@@ -16,12 +16,15 @@ public class ClassifierEvaluator {
 	 * @param trainingLabels   The training label set as an ArrayList.
 	 * @param testingFeatures  The testing feature set as an ArrayList.
 	 * @param testingLabels    The testing label set as an ArrayList.
+	 * @param k                The number of nearest neighbors to consider.
 	 * @return Accuracy of the kNN classifier as a percentage.
 	 */
 	public double evaluateKNN(KNearestNeighbors knnClassifier, ArrayList<int[]> trainingFeatures,
-			ArrayList<Integer> trainingLabels, ArrayList<int[]> testingFeatures, ArrayList<Integer> testingLabels) {
+			ArrayList<Integer> trainingLabels, ArrayList<int[]> testingFeatures, ArrayList<Integer> testingLabels,
+			int k) {
 		// Predict labels for the testing features using the kNN classifier
-		ArrayList<Integer> predictedLabels = knnClassifier.predict(trainingFeatures, trainingLabels, testingFeatures);
+		ArrayList<Integer> predictedLabels = knnClassifier.predict(trainingFeatures, trainingLabels, testingFeatures,
+				k);
 
 		// Calculate and return the accuracy of the kNN predictions
 		return calculateAccuracy(testingLabels, predictedLabels);
@@ -42,9 +45,11 @@ public class ClassifierEvaluator {
 	public double evaluateUnifiedClassifier(ArrayList<int[]> trainingFeatures, ArrayList<Integer> trainingLabels,
 			ArrayList<int[]> testingFeatures, ArrayList<Integer> testingLabels,
 			SupportVectorMachineClassifier svmClassifier, MultiLayerPerceptronClassifier mlpClassifier) {
+		int k = 3; // Define k value for kNN
+
 		// Generate predictions from the kNN classifier
 		ArrayList<Integer> knnPredictions = new KNearestNeighbors().predict(trainingFeatures, trainingLabels,
-				testingFeatures);
+				testingFeatures, k);
 
 		// Initialise arrays for storing predictions from SVM and MLP
 		ArrayList<Integer> svmPredictions = new ArrayList<>();
@@ -96,6 +101,9 @@ public class ClassifierEvaluator {
 			if (actualLabels.get(testingDataPointIndex).equals(predictedLabels.get(testingDataPointIndex))) {
 				correctCount++; // Increment counter if the prediction matches the actual label
 			}
+			System.out.println(
+					actualLabels.get(testingDataPointIndex) + " " + predictedLabels.get(testingDataPointIndex));
+
 		}
 
 		// Return the accuracy as a percentage

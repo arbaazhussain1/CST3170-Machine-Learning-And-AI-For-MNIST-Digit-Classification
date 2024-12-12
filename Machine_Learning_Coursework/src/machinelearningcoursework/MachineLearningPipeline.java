@@ -55,10 +55,10 @@ public class MachineLearningPipeline {
 		System.out.println("Dataset 2 loaded successfully!");
 
 		// Normalise features using L2 normalisation for both datasets
-		System.out.println("Normalising features for both datasets...");
-		dataPreprocessor.normaliseFeatures(featuresDataset1);
-		dataPreprocessor.normaliseFeatures(featuresDataset2);
-		System.out.println("Feature normalisation completed!");
+//		System.out.println("Normalising features for both datasets...");
+//		dataPreprocessor.normaliseFeatures(featuresDataset1);
+//		dataPreprocessor.normaliseFeatures(featuresDataset2);
+//		System.out.println("Feature normalisation completed!");
 	}
 
 	/**
@@ -80,8 +80,8 @@ public class MachineLearningPipeline {
 		dataPreprocessor.splitDataset(features, labels, fold1Features, fold1Labels, fold2Features, fold2Labels);
 
 		// Convert labels for SVM binary classification
-		dataPreprocessor.convertLabelsForSVM(fold1Labels, 1); // Convert target class labels for Fold 1
-		dataPreprocessor.convertLabelsForSVM(fold2Labels, 1); // Convert target class labels for Fold 2
+//		dataPreprocessor.convertLabelsForSVM(fold1Labels, 1); // Convert target class labels for Fold 1
+//		dataPreprocessor.convertLabelsForSVM(fold2Labels, 1); // Convert target class labels for Fold 2
 
 		// Initialise evaluation and validation framework
 		ClassifierEvaluator evaluator = new ClassifierEvaluator();
@@ -112,9 +112,10 @@ public class MachineLearningPipeline {
 	private void evaluateKNN(TwoFoldValidation twoFoldValidation, ArrayList<int[]> fold1Features,
 			ArrayList<Integer> fold1Labels, ArrayList<int[]> fold2Features, ArrayList<Integer> fold2Labels) {
 		KNearestNeighbors knn = new KNearestNeighbors(); // Instantiate kNN classifier
+		int k = 3; // Choose k value (modify as needed, e.g., 1, 3, 5)
 		double accuracy = twoFoldValidation.runTwoFoldValidation(knn, fold1Features, fold1Labels, fold2Features,
-				fold2Labels);
-		System.out.printf("kNN Overall Accuracy (Two-Fold Test): %.2f%%\n ", accuracy);
+				fold2Labels, k);
+		System.out.printf("kNN Overall Accuracy (Two-Fold Test): %.2f%%\n", accuracy);
 	}
 
 	/**

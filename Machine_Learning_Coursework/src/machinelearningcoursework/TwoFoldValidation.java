@@ -2,17 +2,13 @@ package machinelearningcoursework;
 
 import java.util.ArrayList;
 
-/**
- * Handles two-fold cross-validation for various machine learning classifiers.
- * Supports kNN, SVM, and MLP classifiers.
- */
 public class TwoFoldValidation {
 
 	private final ClassifierEvaluator evaluator;
 
 	/**
 	 * Constructor for TwoFoldValidation.
-	 * 
+	 *
 	 * @param evaluator An instance of ClassifierEvaluator to perform evaluation
 	 *                  tasks.
 	 */
@@ -21,10 +17,37 @@ public class TwoFoldValidation {
 	}
 
 	/**
-	 * Executes two-fold cross-validation on a given classifier. The classifier is
-	 * trained on one fold and tested on the other, then vice versa.
-	 * 
-	 * @param classifier    The classifier to evaluate (kNN, SVM, or MLP).
+	 * Executes two-fold cross-validation specifically for kNN with the `k`
+	 * parameter.
+	 *
+	 * @param knn           The kNN classifier.
+	 * @param fold1Features Features for the first fold.
+	 * @param fold1Labels   Labels for the first fold.
+	 * @param fold2Features Features for the second fold.
+	 * @param fold2Labels   Labels for the second fold.
+	 * @param k             Number of nearest neighbors to consider.
+	 * @return The average accuracy across both folds as a percentage.
+	 */
+	public double runTwoFoldValidation(KNearestNeighbors knn, ArrayList<int[]> fold1Features,
+			ArrayList<Integer> fold1Labels, ArrayList<int[]> fold2Features, ArrayList<Integer> fold2Labels, int k) {
+		// Fold 1: Train on Fold 1, Test on Fold 2
+		double accuracyFold1 = evaluator.evaluateKNN(knn, fold1Features, fold1Labels, fold2Features, fold2Labels, k);
+
+		// Fold 2: Train on Fold 2, Test on Fold 1
+		double accuracyFold2 = evaluator.evaluateKNN(knn, fold2Features, fold2Labels, fold1Features, fold1Labels, k);
+
+		// Print accuracy for each fold
+		System.out.printf("Fold 1 Accuracy: %.2f%%\n", accuracyFold1);
+		System.out.printf("Fold 2 Accuracy: %.2f%%\n", accuracyFold2);
+
+		// Return the average accuracy across both folds
+		return (accuracyFold1 + accuracyFold2) / 2.0;
+	}
+
+	/**
+	 * Executes two-fold cross-validation for generic classifiers (SVM, MLP, etc.).
+	 *
+	 * @param classifier    The classifier to evaluate (SVM, MLP, etc.).
 	 * @param fold1Features Features for the first fold.
 	 * @param fold1Labels   Labels for the first fold.
 	 * @param fold2Features Features for the second fold.
@@ -50,7 +73,7 @@ public class TwoFoldValidation {
 	/**
 	 * Evaluates a classifier by training it on one fold and testing it on another.
 	 * The classifier's type is determined dynamically.
-	 * 
+	 *
 	 * @param classifier       The classifier to evaluate.
 	 * @param trainingFeatures Features used for training the classifier.
 	 * @param trainingLabels   Labels corresponding to the training features.
@@ -62,9 +85,9 @@ public class TwoFoldValidation {
 	private double evaluateClassifier(Object classifier, ArrayList<int[]> trainingFeatures,
 			ArrayList<Integer> trainingLabels, ArrayList<int[]> testingFeatures, ArrayList<Integer> testingLabels) {
 		if (classifier instanceof KNearestNeighbors) {
-			// Evaluate kNN classifier
+			// Evaluate kNN classifier (use default k if called here)
 			return evaluator.evaluateKNN((KNearestNeighbors) classifier, trainingFeatures, trainingLabels,
-					testingFeatures, testingLabels);
+					testingFeatures, testingLabels, 3);
 		} else if (classifier instanceof SupportVectorMachineClassifier) {
 			// Evaluate SVM classifier
 			SupportVectorMachineClassifier svm = (SupportVectorMachineClassifier) classifier;
