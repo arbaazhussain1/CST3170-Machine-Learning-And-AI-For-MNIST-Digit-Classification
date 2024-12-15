@@ -1,112 +1,104 @@
 package machinelearningcoursework;
 
-import java.util.ArrayList;
-
 /**
  * Evaluates classifiers and calculates accuracy metrics. Supports individual
  * and unified evaluation of kNN, SVM, and MLP classifiers.
  */
 public class ClassifierEvaluator {
 
-	/**
-	 * Evaluates the k-Nearest Neighbors (kNN) classifier.
-	 *
-	 * @param knnClassifier    The kNN classifier instance.
-	 * @param trainingFeatures The training feature set as an ArrayList.
-	 * @param trainingLabels   The training label set as an ArrayList.
-	 * @param testingFeatures  The testing feature set as an ArrayList.
-	 * @param testingLabels    The testing label set as an ArrayList.
-	 * @param k                The number of nearest neighbors to consider.
-	 * @return Accuracy of the kNN classifier as a percentage.
-	 */
-	public double evaluateKNN(KNearestNeighbors knnClassifier, ArrayList<int[]> trainingFeatures,
-			ArrayList<Integer> trainingLabels, ArrayList<int[]> testingFeatures, ArrayList<Integer> testingLabels,
-			int k) {
+	// Constants for kNN configuration
+	private static final int KNN_NEIGHBORS = 3; // Number of nearest neighbors
+
+	// Constants for SupportVectorMachineClassifier configuration
+	private static final int SVM_NUM_CLASSES = 10; // Number of classes (0-9)
+	private static final double SVM_LEARNING_RATE = 0.005; // Learning rate for SVM
+	private static final double SVM_REGULARISATION_PARAM = 1.0; // Regularisation parameter
+	private static final int SVM_MAX_TRAINING_ITERATIONS = 10000; // Maximum number of training iterations
+
+	
+	// Evaluates k-Nearest Neighbors (kNN) classifier by predicting labels for test
+	// data and computing accuracy.
+	public double evaluateKNN(KNearestNeighbors knnClassifier, int[][] trainingFeatures, int[] trainingLabels,
+            int[][] testingFeatures, int[] testingLabels, int numNeighbors) {
 		// Predict labels for the testing features using the kNN classifier
-		ArrayList<Integer> predictedLabels = knnClassifier.predict(trainingFeatures, trainingLabels, testingFeatures,
-				k);
+	    int[] predictedLabels = knnClassifier.predict(trainingFeatures, trainingLabels, testingFeatures, numNeighbors);
 
 		// Calculate and return the accuracy of the kNN predictions
-		return calculateAccuracy(testingLabels, predictedLabels);
+	    return calculateAccuracy(testingLabels, predictedLabels);
 	}
 
-	/**
-	 * Evaluates a unified classifier using stacked predictions from kNN, SVM, and
-	 * MLP.
-	 *
-	 * @param trainingFeatures The training feature set as an ArrayList.
-	 * @param trainingLabels   The training label set as an ArrayList.
-	 * @param testingFeatures  The testing feature set as an ArrayList.
-	 * @param testingLabels    The testing label set as an ArrayList.
-	 * @param svmClassifier    The Support Vector Machine (SVM) classifier.
-	 * @param mlpClassifier    The Multi-Layer Perceptron (MLP) classifier.
-	 * @return Accuracy of the unified classifier as a percentage.
-	 */
-	public double evaluateUnifiedClassifier(ArrayList<int[]> trainingFeatures, ArrayList<Integer> trainingLabels,
-			ArrayList<int[]> testingFeatures, ArrayList<Integer> testingLabels,
-			SupportVectorMachineClassifier svmClassifier, MultiLayerPerceptronClassifier mlpClassifier) {
-		int k = 3; // Define k value for kNN
+	// Evaluates a unified classifier by combining predictions from kNN, SVM, and MLP classifiers into meta-features and training a meta-classifier to compute accuracy.
+	public double evaluateUnifiedClassifier(int[][] trainingFeatures, int[] trainingLabels, int[][] testingFeatures,
+			int[] testingLabels, SupportVectorMachineClassifier svmClassifier,
+			MultiLayerPerceptronClassifier mlpClassifier) {
 
 		// Generate predictions from the kNN classifier
-		ArrayList<Integer> knnPredictions = new KNearestNeighbors().predict(trainingFeatures, trainingLabels,
-				testingFeatures, k);
+		int[] knnPredictions = new KNearestNeighbors().predict(trainingFeatures, trainingLabels, testingFeatures,
+				KNN_NEIGHBORS);
 
 		// Initialise arrays for storing predictions from SVM and MLP
-		ArrayList<Integer> svmPredictions = new ArrayList<>();
-		ArrayList<Integer> mlpPredictions = new ArrayList<>();
+		int[] svmPredictions = new int[testingFeatures.length];
+		int[] mlpPredictions = new int[testingFeatures.length];
 
 		// Generate predictions from SVM and MLP for each test sample
-		for (int[] testSample : testingFeatures) {
-			svmPredictions.add(svmClassifier.predict(testSample)); // SVM prediction
-			mlpPredictions.add(mlpClassifier.predict(testSample)); // MLP prediction
+		for (int testSample = 0; testSample < testingFeatures.length; testSample++) {
+			svmPredictions[testSample] = svmClassifier.predict(testingFeatures[testSample]); // SVM prediction
+			mlpPredictions[testSample] = mlpClassifier.predict(testingFeatures[testSample]); // MLP prediction
 		}
 
 		// Combine predictions from kNN, SVM, and MLP into a meta-feature set
-		ArrayList<int[]> stackedMetaFeatures = new ArrayList<>();
-		for (int dataPointIndex = 0; dataPointIndex < testingFeatures.size(); dataPointIndex++) {
-			stackedMetaFeatures.add(new int[] { knnPredictions.get(dataPointIndex), // kNN prediction
-					svmPredictions.get(dataPointIndex), // SVM prediction
-					mlpPredictions.get(dataPointIndex) // MLP prediction
-			});
+		int numMetaFeatures = 3; // Number of meta-features (kNN, SVM, and MLP predictions)
+		int[][] stackedMetaFeatures = new int[testingFeatures.length][numMetaFeatures];
+		for (int dataPointIndex = 0; dataPointIndex < testingFeatures.length; dataPointIndex++) {
+			stackedMetaFeatures[dataPointIndex] = new int[] { knnPredictions[dataPointIndex],
+					svmPredictions[dataPointIndex], mlpPredictions[dataPointIndex] };
 		}
-
 		// Initialise a Support Vector Machine (SVM) as a meta-classifier
-		SupportVectorMachineClassifier metaClassifier = new SupportVectorMachineClassifier(3, 0.01, 1.0, 1000);
-
+		SupportVectorMachineClassifier metaClassifier = new SupportVectorMachineClassifier(numMetaFeatures,
+				SVM_NUM_CLASSES, SVM_LEARNING_RATE, SVM_REGULARISATION_PARAM, SVM_MAX_TRAINING_ITERATIONS);
 		// Train the meta-classifier on the meta-feature set
 		metaClassifier.train(stackedMetaFeatures, testingLabels);
 
 		// Generate predictions using the trained meta-classifier
-		ArrayList<Integer> metaPredictions = new ArrayList<>();
-		for (int[] metaFeature : stackedMetaFeatures) {
-			metaPredictions.add(metaClassifier.predict(metaFeature));
+		int[] metaPredictions = new int[stackedMetaFeatures.length];
+		for (int dataPointIndexPredictions = 0; dataPointIndexPredictions < stackedMetaFeatures.length; dataPointIndexPredictions++) {
+			metaPredictions[dataPointIndexPredictions] = metaClassifier
+					.predict(stackedMetaFeatures[dataPointIndexPredictions]);
 		}
-
 		// Calculate and return the accuracy of the unified classifier
 		return calculateAccuracy(testingLabels, metaPredictions);
 	}
 
-	/**
-	 * Calculates the accuracy of predictions compared to actual labels.
-	 *
-	 * @param actualLabels    The true labels as an ArrayList.
-	 * @param predictedLabels The predicted labels as an ArrayList.
-	 * @return Accuracy as a percentage.
-	 */
-	public double calculateAccuracy(ArrayList<Integer> actualLabels, ArrayList<Integer> predictedLabels) {
+	
+	// Computes the accuracy of predicted labels against actual labels, while
+	// generating and printing a confusion matrix.
+	public double calculateAccuracy(int[] actualLabels, int[] predictedLabels) {
 		int correctCount = 0; // Counter for correctly predicted labels
+		int[][] confusionMatrix = new int[SVM_NUM_CLASSES][SVM_NUM_CLASSES]; // Confusion matrix dimensions
 
 		// Iterate through actual and predicted labels to count matches
-		for (int testingDataPointIndex = 0; testingDataPointIndex < actualLabels.size(); testingDataPointIndex++) {
-			if (actualLabels.get(testingDataPointIndex).equals(predictedLabels.get(testingDataPointIndex))) {
+		for (int testingDataPointIndex = 0; testingDataPointIndex < actualLabels.length; testingDataPointIndex++) {
+			if (actualLabels[testingDataPointIndex] == predictedLabels[testingDataPointIndex]) {
 				correctCount++; // Increment counter if the prediction matches the actual label
 			}
-			System.out.println(
-					actualLabels.get(testingDataPointIndex) + " " + predictedLabels.get(testingDataPointIndex));
 
+			confusionMatrix[actualLabels[testingDataPointIndex]][predictedLabels[testingDataPointIndex]]++;
+
+			// Print the actual and predicted labels for debugging
+//            System.out.println(actualLabels[testingDataPointIndex] + " " + predictedLabels[testingDataPointIndex]);
+		}
+
+		System.out.println("Confusion Matrix");
+		for (int actualLabel = 0; actualLabel < SVM_NUM_CLASSES; actualLabel++) { // Row represents the actual label
+			System.out.printf("%-3d | ", actualLabel);
+			for (int predictedLabel = 0; predictedLabel < SVM_NUM_CLASSES; predictedLabel++) { // Column represents the
+																								// predicted label
+				System.out.printf("%-5d", confusionMatrix[actualLabel][predictedLabel]);
+			}
+			System.out.println();
 		}
 
 		// Return the accuracy as a percentage
-		return (correctCount * 100.0) / actualLabels.size();
+		return (correctCount * 100.0) / actualLabels.length;
 	}
 }
