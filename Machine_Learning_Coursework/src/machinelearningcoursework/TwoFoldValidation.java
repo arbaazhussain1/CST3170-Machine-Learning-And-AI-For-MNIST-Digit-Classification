@@ -17,7 +17,7 @@ public class TwoFoldValidation {
 	}
 
 	// Runs two-fold cross-validation specifically for kNN with the specified number
-	// of neighbors
+	// of neighbours
 	public double runTwoFoldValidation(KNearestNeighbors knn, int[][] fold1Features, int[] fold1Labels,
 			int[][] fold2Features, int[] fold2Labels, int numNeighbors) {
 		// Fold 1: Train on Fold 1, Test on Fold 2

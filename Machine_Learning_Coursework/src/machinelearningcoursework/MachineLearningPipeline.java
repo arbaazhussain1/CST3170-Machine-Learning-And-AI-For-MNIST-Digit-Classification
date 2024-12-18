@@ -3,13 +3,14 @@ package machinelearningcoursework;
 import java.io.File;
 
 /**
- * Entry point for the machine learning pipeline. Orchestrates preprocessing,
- * cross-validation, and evaluation of kNN, SVM, MLP, and a unified classifier.
+ * The entry point of the machine learning pipeline manages data preparation, cross-validation,
+ * and evaluation of classifiers such as kNN, SVM, MLP, and a unified model, 
+ * ensuring streamlined and efficient execution of the entire workflow.
  */
 public class MachineLearningPipeline {
 
-	// Constants for dataset dimensions
-	private static final int DATASET_SIZE = 2810; // Number of rows in each dataset
+	// Constants for dataset's dimensions
+	private static final int DATASET_SIZE = 2810; // Number of rows in each dataset's
 	private static final int FEATURE_DIMENSIONS = 64; // Number of features per data point
 
 	// kNN configuration
@@ -34,7 +35,7 @@ public class MachineLearningPipeline {
 		MachineLearningPipeline pipeline = new MachineLearningPipeline();
 		System.out.println("Initialising machine learning pipeline...");
 
-		// Load and preprocess data
+		// Load and preprocessing data
 		System.out.println("Loading datasets...");
 		DataPreprocessor dataPreprocessor = new DataPreprocessor();
 		int[][] trainingFeaturesDataset1 = new int[DATASET_SIZE][FEATURE_DIMENSIONS];
@@ -52,14 +53,14 @@ public class MachineLearningPipeline {
 		System.out.println("Cross-validation and evaluation completed!");
 	}
 
-	// Loads datasets from CSV files, normalizes features, and stores them in arrays
+	// Loads dataset's from CSV files, normalises features, and stores them in arrays
 	private void loadAndPreprocessData(DataPreprocessor dataPreprocessor, int[][] featuresDataset1,
 			int[] labelsDataset1, int[][] featuresDataset2, int[] labelsDataset2) {
 		String fileLocation = System.getProperty("user.dir");
-		String dataset1Path = fileLocation + File.separator + "dataSet1.csv"; // File path for dataset 1
-		String dataset2Path = fileLocation + File.separator + "dataSet2.csv"; // File path for dataset 2
+		String dataset1Path = fileLocation + File.separator + "dataSet1.csv"; // File path for dataset's 1
+		String dataset2Path = fileLocation + File.separator + "dataSet2.csv"; // File path for dataset's 2
 
-		// Load features and labels from dataset files
+		// Load features and labels from dataset's files
 		System.out.println("Loading dataset 1 from " + dataset1Path + "...");
 		dataPreprocessor.loadFileData(dataset1Path, featuresDataset1, labelsDataset1, true); // Debugging enabled
 //         dataPreprocessor.getLabels(dataset1Path);

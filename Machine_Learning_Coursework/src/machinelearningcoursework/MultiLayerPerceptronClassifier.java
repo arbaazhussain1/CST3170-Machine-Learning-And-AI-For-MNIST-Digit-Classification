@@ -76,7 +76,7 @@ public class MultiLayerPerceptronClassifier {
 		}
 	}
 
-	// Trains the MLP using backpropagation on the dataset.
+	// Trains the MLP using backpropagation on the dataset's.
 	public void train(int[][] trainingFeatures, int[] trainingLabels) {
 		// Convert class labels to one-hot encoded vectors for multi-class
 		// classification
@@ -84,7 +84,7 @@ public class MultiLayerPerceptronClassifier {
 
 		// Iterate through epochs and train the network on all samples
 		for (int epochIndex = 0; epochIndex < maxTrainingEpochs; epochIndex++) {
-			// Loop through each training sample in the dataset
+			// Loop through each training sample in the dataset's
 			for (int sampleIndex = 0; sampleIndex < trainingFeatures.length; sampleIndex++) {
 				// Train the network using a single sample and its corresponding target output
 				trainSingleSample(trainingFeatures[sampleIndex], oneHotLabels[sampleIndex]);

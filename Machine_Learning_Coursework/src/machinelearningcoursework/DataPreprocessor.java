@@ -5,13 +5,13 @@ import java.io.FileReader;
 import java.io.IOException;
 
 /**
- * Handles preprocessing of input datasets. Includes loading data from CSV
- * files, normalising features, splitting datasets, and converting labels for
+ * Handles preprocessing of input dataset's. Includes loading data from CSV
+ * files, normalising features, splitting dataset's, and converting labels for
  * binary classification.
  */
 public class DataPreprocessor {
 
-	// Constants for dataset dimensions
+	// Constants for dataset's dimensions
 	private static final int TOTAL_DIMENSIONS = 65; // Total dimensions including features and label
 	private static final int FEATURE_DIMENSIONS = 64; // Number of feature dimensions
 	private static final String CSV_DELIMITER = ","; // Delimiter used in the CSV file

@@ -41,7 +41,7 @@ public class SupportVectorMachineClassifier {
 
 	// Trains the SVM for a specific class using a one-vs-all approach.
 	private void trainOneClass(int[][] datasetFeatures, int[] datasetLabels, int classIndex) {
-		// Converts dataset labels into binary labels for the specified class
+		// Converts dataset's labels into binary labels for the specified class
 		int[] binaryLabels = encodeLabelsForClass(datasetLabels, classIndex);
 		int numFeatures = classFeatureWeights[classIndex].length; // Number of features for this class
 
@@ -65,7 +65,7 @@ public class SupportVectorMachineClassifier {
 	// training.
 	private double computeGradients(int[][] datasetFeatures, int[] binaryLabels, int classIndex, double[] gradients) {
 		double biasGradient = 0.0; // Initialise bias gradient
-		// Iterate through all data points in the dataset
+		// Iterate through all data points in the dataset's
 		for (int dataPointIndex = 0; dataPointIndex < datasetFeatures.length; dataPointIndex++) {
 			int[] featureVector = datasetFeatures[dataPointIndex]; // Extract feature vector of the current sample
 			int label = binaryLabels[dataPointIndex]; // Get binary label for the current class
@@ -74,7 +74,7 @@ public class SupportVectorMachineClassifier {
 			double margin = label * (calculateDotProduct(classFeatureWeights[classIndex], featureVector)
 					+ classBiasTerms[classIndex]);
 
-			if (margin < 1) { // If the sample is misclassified or within the margin
+			if (margin < 1) { // If the sample is mis-classified or within the margin
 				// Compute gradients for the weights
 				for (int featureIndex = 0; featureIndex < featureVector.length; featureIndex++) { // Accumulate gradient
 																									// for weight
@@ -105,11 +105,11 @@ public class SupportVectorMachineClassifier {
 		classBiasTerms[classIndex] -= learningRate * (biasGradient / numSamples);
 	}
 
-	// Encodes dataset labels into binary labels for a specific class.
+	// Encodes dataset's labels into binary labels for a specific class.
 	private int[] encodeLabelsForClass(int[] datasetLabels, int classIndex) {
 		int[] encodedLabels = new int[datasetLabels.length]; // Array to store encoded labels
 
-		// Iterate through all dataset labels
+		// Iterate through all dataset's labels
 		for (int labelIndex = 0; labelIndex < datasetLabels.length; labelIndex++) {
 			// Assign +1 for the target class and -1 for all other classes
 			encodedLabels[labelIndex] = (datasetLabels[labelIndex] == classIndex) ? 1 : -1;

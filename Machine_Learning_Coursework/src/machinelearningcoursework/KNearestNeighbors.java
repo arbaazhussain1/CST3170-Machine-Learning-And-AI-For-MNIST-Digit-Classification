@@ -21,7 +21,7 @@ public class KNearestNeighbors {
         for (int testPointIndex = 0; testPointIndex < testingFeatures.length; testPointIndex++) {
             Neighbor[] nearestNeighbors = findNearestNeighbors(
                     trainingFeatures, trainingLabels, testingFeatures[testPointIndex]);
-            sortNeighborsByDistance(nearestNeighbors); // Sort the neighbors by distance
+            sortNeighborsByDistance(nearestNeighbors); // Sort the neighbours by distance
             int[] labelCounts = countLabels(nearestNeighbors, numNeighbors, maxLabel); // Count labels among k-nearest neighbors
             predictedLabels[testPointIndex] = predictLabel(labelCounts); // Predict the label with majority vote
         }
@@ -42,22 +42,22 @@ public class KNearestNeighbors {
 
  // Finds the nearest neighbors for a given test feature vector by calculating Euclidean distances.
     private Neighbor[] findNearestNeighbors(int[][] trainingFeatures, int[] trainingLabels, int[] testingDataPoint) {
-        Neighbor[] nearestNeighbors = new Neighbor[trainingFeatures.length]; // Array to store neighbors
+        Neighbor[] nearestNeighbors = new Neighbor[trainingFeatures.length]; // Array to store neighbours
         for (int trainingDataPointIndex = 0; trainingDataPointIndex < trainingFeatures.length; trainingDataPointIndex++) {
             double distance = calculateEuclideanDistance(
                     testingDataPoint, trainingFeatures[trainingDataPointIndex]); // Compute Euclidean distance
             nearestNeighbors[trainingDataPointIndex] = new Neighbor(trainingLabels[trainingDataPointIndex], distance); // Store label and distance
         }
-        return nearestNeighbors; // Return the array of neighbors with distances
+        return nearestNeighbors; // Return the array of neighbours with distances
     }
 
- // Sorts an array of neighbors in ascending order of their distances using a simple bubble sort algorithm.
+ // Sorts an array of neighbours in ascending order of their distances using a simple bubble sort algorithm.
     private void sortNeighborsByDistance(Neighbor[] neighbors) {
         for (int currentIndex = 0; currentIndex < neighbors.length - 1; currentIndex++) {
             for (int nextIndex = currentIndex + 1; nextIndex < neighbors.length; nextIndex++) {
                 if (neighbors[currentIndex].distance > neighbors[nextIndex].distance) { // Swap if out of order
-                    Neighbor temporaryNeighbor = neighbors[currentIndex]; // Temporarily hold the current neighbor
-                    neighbors[currentIndex] = neighbors[nextIndex];  // Swap neighbors
+                    Neighbor temporaryNeighbor = neighbors[currentIndex]; // Temporarily hold the current neighbour
+                    neighbors[currentIndex] = neighbors[nextIndex];  // Swap neighbours
                     neighbors[nextIndex] = temporaryNeighbor; // Complete the swap
                 }
             }
@@ -68,7 +68,7 @@ public class KNearestNeighbors {
     private int[] countLabels(Neighbor[] nearestNeighbors, int numNeighbors, int maxLabel) {
         int[] labelCounts = new int[maxLabel + 1]; // Array to count occurrences of each label (size = max label + 1)
         for (int neighborIndex = 0; neighborIndex < numNeighbors; neighborIndex++) {
-            int label = nearestNeighbors[neighborIndex].label; // Extract the label of the current neighbor
+            int label = nearestNeighbors[neighborIndex].label; // Extract the label of the current neighbour
             labelCounts[label]++; // Increment the count for this label
         }
         return labelCounts; // Return the array containing label counts
@@ -102,12 +102,12 @@ public class KNearestNeighbors {
         return Math.sqrt(squaredDifferenceSum);
     }
 
-    // Represents a neighboring data point with its label and distance from the test data point.
+    // Represents a neighbouring data point with its label and distance from the test data point.
     private static class Neighbor {
-        int label; // The label of the neighbor
-        double distance; // The distance of the neighbor from a test point
+        int label; // The label of the neighbour
+        double distance; // The distance of the neighbour from a test point
 
-        // Constructor to initialize the label and distance of a neighbor
+        // Constructor to initialise the label and distance of a neighbour
         Neighbor(int label, double distance) {
             this.label = label;
             this.distance = distance;
