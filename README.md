@@ -94,7 +94,7 @@ The application prints:
 ---
 
 ## Authors
-- [Your Name or Team Name]
+- [Arbaaz Hussain]
 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.
